@@ -5,7 +5,8 @@ const ytdl = require('@distube/ytdl-core');
 
 // Inicializa o aplicativo Express
 const app = express();
-const PORT = 4000; // Porta em que o servidor irá rodar
+app.use(express.static('public'));
+const PORT = process.env.PORT||4000; // Porta em que o servidor irá rodar
 
 // Habilita o CORS para permitir requisições do frontend
 app.use(cors());
