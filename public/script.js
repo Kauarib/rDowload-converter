@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // A mágica acontece aqui: redireciona o navegador para a URL do nosso backend
         // O backend responderá com o arquivo de vídeo, forçando o download
         // Usamos encodeURIComponent para garantir que a URL seja passada corretamente
-        window.location.href = `http://localhost:4000/download?url=${encodeURIComponent(videoURL)}`;
+        window.location.href = `/download?url=${encodeURIComponent(videoURL)}`;
 
         // Um pequeno truque para reativar o botão depois de um tempo
         // Já que não temos um feedback direto de quando o download começou,
