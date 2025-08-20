@@ -5,7 +5,7 @@ const ytdl = require('@distube/ytdl-core'); // Usaremos para pegar o título rap
 
 const app = express();
 app.use(cors());
-
+app.use(express.static('public')); // Serve arquivos estáticos da pasta 'public'
 // A porta será a definida pelo Render (process.env.PORT) ou 4000 se não houver nenhuma.
 const PORT = process.env.PORT || 4000;
 
