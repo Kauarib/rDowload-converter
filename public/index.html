@@ -11,7 +11,10 @@
         <h1>RDandC Downloader</h1>
         <p>Cole a URL do vídeo do YouTube abaixo e clique em "Baixar"</p>
         <input type="text" id="videoURL" placeholder="https://www.youtube.com/watch?v=...">
-        <button id="downloadBtn">Baixar MP4</button>
+        <div class="button-container"> 
+            <button id="downloadBtn">Baixar MP4</button>
+            <button id="resetBtn"  class="hidden"> Fazer novo Download</button>
+        </div>
         <div class="message-area" id="messageArea"></div>
     </div>
     <script src="script.js"></script>

@@ -73,3 +73,16 @@ button:disabled {
 .message-area.error {
     color: #dc3545;
 }
+.button-container {
+    display: grid; /* Usa grid para sobrepor os botões se necessário */
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+}
+
+.button-container button {
+    grid-column: 1;
+    grid-row: 1;
+}
+.hidden {
+    display: none;
+}
