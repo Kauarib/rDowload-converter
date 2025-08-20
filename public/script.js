@@ -1,20 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     const urlInput = document.getElementById('videoURL');
     const downloadBtn = document.getElementById('downloadBtn');
-    const resetBtn = document.getElementById('resetBtn'); // Pega o novo botão
     const messageArea = document.getElementById('messageArea');
 
-    // --- Função para resetar a interface ---
-    function resetUI() {
-        urlInput.value = ''; // Limpa o campo de input
-        showMessage('', ''); // Limpa a mensagem de status
-        downloadBtn.classList.remove('hidden'); // Mostra o botão de download
-        resetBtn.classList.add('hidden'); // Esconde o botão de reset
-        downloadBtn.disabled = false;
-        downloadBtn.textContent = 'Baixar MP4';
-    }
-
-    // --- Evento do botão de Download ---
     downloadBtn.addEventListener('click', async () => {
         const videoURL = urlInput.value.trim();
 
@@ -23,56 +11,68 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // --- Início da Lógica de Fetch ---
+
+        // 1. Prepara a interface para o download
+        showMessage('Processando seu vídeo...', 'success');
         downloadBtn.disabled = true;
-        downloadBtn.textContent = 'Processando...';
-        showMessage('Aguarde, iniciando o download...', 'info');
+        downloadBtn.innerText = 'Baixando...';
 
         try {
+            // 2. Chama o backend "nos bastidores"
             const response = await fetch(`/download?url=${encodeURIComponent(videoURL)}`);
 
+            // 3. Verifica se o backend respondeu com um erro (status 400, 500, etc.)
             if (!response.ok) {
-                if (response.status === 429) {
-                    throw new Error('Muitas requisições. O servidor está temporariamente bloqueado. Tente novamente mais tarde.');
-                }
+                // Se deu erro, pega a mensagem de erro JSON que o servidor enviou
                 const errorData = await response.json();
-                throw new Error(errorData.error || `Erro HTTP: ${response.status}`);
+                throw new Error(errorData.error || 'Ocorreu um erro desconhecido.');
             }
 
-            const blob = await response.blob();
-            const contentDisposition = response.headers.get('Content-Disposition');
-            let filename = 'video.mp4';
-            if (contentDisposition) {
-                const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
-                if (filenameMatch && filenameMatch.length > 1) {
-                    filename = decodeURIComponent(filenameMatch[1]);
+            // 4. Se deu certo, o backend enviou o vídeo. Agora preparamos o download no navegador.
+            showMessage('Download iniciando!', 'success');
+            
+            // Pega o nome do arquivo do cabeçalho da resposta
+            const disposition = response.headers.get('Content-Disposition');
+            let filename = 'video.mp4'; // Nome padrão
+            if (disposition && disposition.indexOf('attachment') !== -1) {
+                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                const matches = filenameRegex.exec(disposition);
+                if (matches != null && matches[1]) {
+                    filename = decodeURIComponent(matches[1].replace(/['"]/g, ''));
                 }
             }
+
+            // Converte a resposta em um "blob" (um tipo de arquivo)
+            const blob = await response.blob();
             
+            // Cria uma URL temporária para esse arquivo na memória do navegador
             const url = window.URL.createObjectURL(blob);
+            
+            // Cria um link invisível, clica nele para iniciar o download e depois o remove
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
             a.download = filename;
             document.body.appendChild(a);
             a.click();
-            
             window.URL.revokeObjectURL(url);
             document.body.removeChild(a);
-            showMessage('Download concluído com sucesso!', 'success');
 
         } catch (error) {
-            console.error('Erro no processo de download:', error);
-            showMessage(`Falha no download: ${error.message}`, 'error');
+            // 5. Se qualquer passo falhar, mostra a mensagem de erro na página
+            console.error('Erro no download:', error);
+            showMessage(error.message, 'error');
         } finally {
-            // Independente de sucesso ou falha, esconde o botão de download e mostra o de reset
-            downloadBtn.classList.add('hidden');
-            resetBtn.classList.remove('hidden');
+            // 6. Independentemente de sucesso ou falha, reativa a interface
+            downloadBtn.disabled = false;
+            downloadBtn.innerText = 'Baixar MP4';
+            setTimeout(() => {
+                // Limpa a mensagem após alguns segundos
+                messageArea.textContent = '';
+                messageArea.className = 'message-area';
+            }, 5000);
         }
-    });
-
-    // --- Evento do novo botão de Reset ---
-    resetBtn.addEventListener('click', () => {
-        resetUI();
     });
 
     function showMessage(message, type) {
